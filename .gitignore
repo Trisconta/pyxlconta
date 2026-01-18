@@ -1,3 +1,6 @@
+# Specific repo exclusions
+copy_amapa.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
