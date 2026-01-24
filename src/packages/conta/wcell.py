@@ -13,8 +13,8 @@ class GenCell:
         return self._data
 
 
-class XCell(GenCell):
-    """ XCell class """
+class WCell(GenCell):
+    """ WCell class """
     def_empty_cell = "-"
 
     def __init__(self, data, name="cell"):
@@ -22,6 +22,11 @@ class XCell(GenCell):
         super().__init__(data, name=name)
         self._orig = data
         self._simple, self._value = "", None
+
+    def to_string(self):
+        if self._simple:
+            return self._simple
+        return self._get_string()
 
     def lower(self):
         """ Lower-case, when applicable! """
@@ -36,7 +41,12 @@ class XCell(GenCell):
             ref, val = data
         else:
             ref, val = None, data
-        astr = XCell.def_empty_cell if val is None else str(val)
+        if val is None:
+            astr = WCell.def_empty_cell
+        elif isinstance(val, float):
+            astr = f"{val:.2f}"
+        else:
+            astr = str(val)
         self._simple = astr
         self._value = val
         return astr

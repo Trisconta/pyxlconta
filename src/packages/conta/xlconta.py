@@ -5,8 +5,9 @@ Extracts Excel into simpler manageable fields.
 Uses openpyxl !
 """
 
-from .xcell import XCell
 from openpyxl.utils import column_index_from_string, get_column_letter
+from .wcell import WCell
+from .xwordwrap import ascii_7bit
 
 DEBUG = 0
 
@@ -109,7 +110,7 @@ class ExBook(GenericConta):
         res = []
         for trip in flt:
             use, this = self._from_filter(lst, r_num, trip)
-            print(":::", r_num, use, trip, lst[:3])
+            #print(":::", r_num, use, trip, lst[:3])
             if use:
                 return this
         return res
@@ -125,8 +126,8 @@ class ExBook(GenericConta):
         if cell is None:
             return False, []
         name = f"{get_column_letter(col_idx)}{r_num}"
-        new = XCell(cell, name=name)
-        print(f"::: CHECK ({new.name}):", r_num, str(cell), [new], trip)
+        new = WCell(cell, name=name)
+        #print(f"::: CHECK ({new.name}):", r_num, str(cell), [new], trip)
         if oper in ("=*",):
             if val in str(cell).lower():
                 return True, lst
@@ -153,10 +154,12 @@ def easier(cell, col="@", debug=DEBUG):
     if debug > 0:
         astr = f"{cell} (type={type(cell)})"
     else:
-        astr = str(cell)
+        astr = ascii_7bit(cell)
     return astr
 
 
 def to_list(row):
-    res = list(row)
+    res = [
+        (col, WCell(cell).to_string()) for col, cell in row
+    ]
     return res
