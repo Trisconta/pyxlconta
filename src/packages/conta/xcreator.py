@@ -9,8 +9,8 @@ from .wcell import GenCell
 
 
 class ExcelGera(GenCell):
-    def __init__(self, dados, outname="out.xlsx", name=""):
-        super().__init__(data=dados, name=name if name else outname)
+    def __init__(self, data, outname="out.xlsx", name=""):
+        super().__init__(data=data if data else [], name=name if name else outname)
         self.outname = outname
 
     def generate(self):
@@ -19,10 +19,10 @@ class ExcelGera(GenCell):
         ws.title = "Folha1"
         for row in self._data:
             ws.append(row)
-        self._ajustar_larguras(ws)
+        self._adjust_widths(ws)
         wbk.save(self.outname)
 
-    def _ajustar_larguras(self, ws):
+    def _adjust_widths(self, ws):
         """ Larguras de colunas. """
         pigment = 4
         for col in ws.columns:
