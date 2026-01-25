@@ -22,6 +22,7 @@ class WCell(GenCell):
         super().__init__(data, name=name)
         self._orig = data
         self._simple, self._value = "", None
+        self._str_cache, self._ref = self._cell_linear(data)
 
     def to_string(self):
         if self._simple:
@@ -32,11 +33,8 @@ class WCell(GenCell):
         """ Lower-case, when applicable! """
         return self._simple.lower()
 
-    def _cell_linear(self):
-        """ Simple linearization of Excel cell. """
-        if self._value is not None:
-            return self._simple
-        data = self._data
+    def _cell_linear(self, data):
+        """ Simple linearization of an Excel cell. """
         if isinstance(data, tuple):
             ref, val = data
         else:
@@ -49,15 +47,15 @@ class WCell(GenCell):
             astr = str(val)
         self._simple = astr
         self._value = val
-        return astr
+        #astr = f"{ref};val=<{val}>(len:{len(data)})"
+        return astr, ref
 
     def _get_string(self):
-        astr = self._cell_linear()
-        return astr
+        return self._str_cache
 
     def __str__(self):
         return self._get_string()
 
     def __repr__(self):
-        astr = self._get_string()
+        astr = self._str_cache
         return f"{repr(astr)}"

@@ -37,6 +37,7 @@ class ExBook(GenericConta):
         super().__init__(flt=flt, name=name)
         self._filter = self._filter_prep(flt)
         self._add_empties = False
+        self._flood = {}
         self._data = self._linearize(workbook, sheet_index)
 
     def get_rows(self, sheet_index=1, row_start=0):
@@ -69,14 +70,25 @@ class ExBook(GenericConta):
         this = [self.name]	# Leading sheet as index 0
         data = [this]
         for idx, sheet in enumerate(workbook.worksheets, 1):
-            this = []
             use = sheet_index <= 0 or idx == sheet_index
             if not use:
                 continue
+            header = {
+                "title": [sheet.title],
+            }
+            self._flood[idx] = [header]
             for r_num, row in enumerate(
                 sheet.iter_rows(values_only=True),
                 1,
             ):
+                my_row = [
+                    (get_column_letter(idx), val)
+                    for idx, val in enumerate(row, 1)
+                ]
+                self._flood[idx].append(my_row)
+        for idx in sorted(sorted(self._flood)):
+            this = []
+            for r_num, row in enumerate(self._flood[idx][1:], 1):
                 a_row = self._adder(row, r_num, self._filter)
                 use = a_row or self._add_empties
                 if not use:
@@ -87,14 +99,15 @@ class ExBook(GenericConta):
                         to_list(a_row),
                     )
                 )
-            data.append(this)
+            if this:
+                data.append(this)
         return data
 
     def _adder(self, row, r_num, flt):
         """ res = list(row) --> max linear!
         """
         res = [
-            (get_column_letter(idx), val)
+            val
             for idx, val in enumerate(row, 1)
         ]
         if flt is None:
@@ -110,9 +123,9 @@ class ExBook(GenericConta):
         res = []
         for trip in flt:
             use, this = self._from_filter(lst, r_num, trip)
-            #print(":::", r_num, use, trip, lst[:3])
             if use:
-                return this
+                res = this
+                break
         return res
 
     def _from_filter(self, lst, r_num, trip):
@@ -125,9 +138,9 @@ class ExBook(GenericConta):
             return None
         if cell is None:
             return False, []
-        name = f"{get_column_letter(col_idx)}{r_num}"
+        name = f"{get_column_letter(col_idx+1)}{r_num}"
         new = WCell(cell, name=name)
-        #print(f"::: CHECK ({new.name}):", r_num, str(cell), [new], trip)
+        #if r_num in (3, 17): print(":::", r_num, f"{new} lower={new.lower()}", trip, lst[:3])
         if oper in ("=*",):
             if val in str(cell).lower():
                 return True, lst
